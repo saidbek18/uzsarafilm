@@ -29,6 +29,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Optional, Union
 
 import aiosqlite
+from aiohttp import web
 from aiogram import BaseMiddleware, Bot, Dispatcher, F, Router
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ChatMemberStatus, ParseMode
@@ -51,11 +52,11 @@ from aiogram.types import (
 # ======================================================================
 #  SOZLAMALAR
 # ======================================================================
-BOT_TOKEN = os.getenv("BOT_TOKEN", "9144381802:AAEYy_i4d1upgwvMj3m4IFvT35nbuYUWItU")
+BOT_TOKEN = os.getenv("BOT_TOKEN", "BOT_TOKEN_NI_SHU_YERGA_YOZING")
 # Bosh adminlar (ular boshqa adminlarni qo'sha/o'chira oladi)
 OWNER_IDS = {
     int(x)
-    for x in os.getenv("OWNER_IDS", "8165064673").replace(" ", "").split(",")
+    for x in os.getenv("OWNER_IDS", "123456789").replace(" ", "").split(",")
     if x.strip().lstrip("-").isdigit()
 }
 DB_PATH = os.getenv("DB_PATH", "uzsarafilm.db")
@@ -1399,6 +1400,25 @@ async def msg_fallback(msg: Message, state: FSMContext, bot: Bot):
 # ======================================================================
 #  ISHGA TUSHIRISH
 # ======================================================================
+async def start_health_server():
+    """Render (Web Service) uchun: PORT berilgan bo'lsa oddiy 'OK' server ochadi."""
+    port = os.getenv("PORT")
+    if not port:
+        return None
+
+    async def ok(_request):
+        return web.Response(text=f"{BRAND} is running")
+
+    app = web.Application()
+    app.router.add_get("/", ok)
+    app.router.add_get("/health", ok)
+    runner = web.AppRunner(app)
+    await runner.setup()
+    await web.TCPSite(runner, "0.0.0.0", int(port)).start()
+    log.info("Health server %s-portda ishlayapti", port)
+    return runner
+
+
 async def main():
     global BOT_USERNAME
     if BOT_TOKEN.startswith("BOT_TOKEN_NI"):
@@ -1414,10 +1434,13 @@ async def main():
     BOT_USERNAME = me.username or ""
     log.info("%s ishga tushdi: @%s", BRAND, BOT_USERNAME)
 
+    runner = await start_health_server()
     await bot.delete_webhook(drop_pending_updates=True)
     try:
         await dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types())
     finally:
+        if runner is not None:
+            await runner.cleanup()
         await db.close()
         await bot.session.close()
 
