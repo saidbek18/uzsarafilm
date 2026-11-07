@@ -52,11 +52,11 @@ from aiogram.types import (
 # ======================================================================
 #  SOZLAMALAR
 # ======================================================================
-BOT_TOKEN = os.getenv("BOT_TOKEN", "BOT_TOKEN_NI_SHU_YERGA_YOZING")
+BOT_TOKEN = os.getenv("BOT_TOKEN", "9144381802:AAEYy_i4d1upgwvMj3m4IFvT35nbuYUWItU")
 # Bosh adminlar (ular boshqa adminlarni qo'sha/o'chira oladi)
 OWNER_IDS = {
     int(x)
-    for x in os.getenv("OWNER_IDS", "123456789").replace(" ", "").split(",")
+    for x in os.getenv("OWNER_IDS", "8165064673").replace(" ", "").split(",")
     if x.strip().lstrip("-").isdigit()
 }
 DB_PATH = os.getenv("DB_PATH", "uzsarafilm.db")
